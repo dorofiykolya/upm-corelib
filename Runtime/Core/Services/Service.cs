@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Common;
 using Framework.Runtime.Core.Loggers;
@@ -5,7 +6,7 @@ using Injections;
 
 namespace Framework.Runtime.Core.Services
 {
-    public abstract class Service
+    public abstract class Service : IResolve
     {
         private IResolve _resolve;
 
@@ -17,6 +18,8 @@ namespace Framework.Runtime.Core.Services
         protected virtual Task OnInitialize() => Task.CompletedTask;
 
         protected T Resolve<T>() => (T)_resolve.Resolve(typeof(T));
+        
+        object IResolve.Resolve(Type type) => _resolve.Resolve(type);
 
         internal static class Internal
         {
