@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Injections;
 
 namespace Framework.Runtime.Core.ContextBuilder
@@ -10,7 +11,7 @@ namespace Framework.Runtime.Core.ContextBuilder
         protected abstract void OnConfigure(TContext context);
         protected abstract void OnStart(TContext context);
 
-        public static async void Install<TBuilderImpl>(ContextStartup<TBuilderInterface, TContext> startup,
+        public static async Task Install<TBuilderImpl>(ContextStartup<TBuilderInterface, TContext> startup,
             TContext instance, TBuilderImpl serviceBuilder)
             where TBuilderImpl : TBuilderInterface, IContextServiceBuilder
         {
