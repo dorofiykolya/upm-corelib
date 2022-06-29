@@ -20,9 +20,13 @@ namespace Framework.Runtime.Services.UI.Tooltip
             _prefabResourceManager.GetPrefab(path).LoadAsync(def.Lifetime, result =>
             {
                 def.Terminate();
-                MonoBehaviour view = result.Instantiate<MonoBehaviour>();
-                GameObject.DontDestroyOnLoad(view.gameObject);
-                view.transform.SetParent(_transformProvider.Tooltip, false);
+
+                var parent = _transformProvider.Tooltip;
+                MonoBehaviour view = result.Instantiate<MonoBehaviour>(parent);
+                if (parent == null)
+                {
+                    GameObject.DontDestroyOnLoad(view.gameObject);
+                }
 
                 var context = new UIComponentProviderContext(view, lifetime);
                 context.Lifetime.AddAction(() =>

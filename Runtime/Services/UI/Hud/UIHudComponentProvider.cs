@@ -20,8 +20,14 @@ namespace Framework.Runtime.Services.UI.Hud
             _prefabResourceManager.GetPrefab(path).LoadAsync(def.Lifetime, result =>
             {
                 def.Terminate();
-                MonoBehaviour view = result.Instantiate<MonoBehaviour>(_transformProvider.Hud);
-                GameObject.DontDestroyOnLoad(view.gameObject);
+
+                var parent = _transformProvider.Hud;
+                MonoBehaviour view = result.Instantiate<MonoBehaviour>(parent);
+
+                if (parent == null)
+                {
+                    GameObject.DontDestroyOnLoad(view.gameObject);
+                }
 
                 var context = new UIComponentProviderContext(view, lifetime);
                 context.Lifetime.AddAction(() =>

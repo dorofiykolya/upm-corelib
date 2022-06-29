@@ -34,8 +34,12 @@ namespace Framework.Runtime.Services.UI.Windows
             _prefabResourceManager.GetPrefab(path).LoadAsync(def.Lifetime, result =>
             {
                 def.Terminate();
-                MonoBehaviour windowComponent = result.Instantiate<MonoBehaviour>(_provider(_transformProvider));
-                GameObject.DontDestroyOnLoad(windowComponent.gameObject);
+                var parent = _provider(_transformProvider);
+                MonoBehaviour windowComponent = result.Instantiate<MonoBehaviour>(parent);
+                if (parent == null)
+                {
+                    GameObject.DontDestroyOnLoad(windowComponent.gameObject);
+                }
 
                 var context = new UIComponentProviderContext(windowComponent, lifetime);
                 context.Lifetime.AddAction(() =>
