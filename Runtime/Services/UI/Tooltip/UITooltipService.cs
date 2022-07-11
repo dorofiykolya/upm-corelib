@@ -65,7 +65,7 @@ namespace Framework.Runtime.Services.UI.Tooltip
                 {
                     var mediator = (Widget)_injector.Resolve(type);
                     _injector.Inject(mediator);
-                    Widget.Internal.Initialize(mediator, intersectLifetime);
+                    Widget.Internal.Initialize(_injector, mediator, intersectLifetime);
                     _opened.Add(mediator);
                     var modelMediator = mediator as IWidgetWithModel;
                     if (model != null)
@@ -99,7 +99,7 @@ namespace Framework.Runtime.Services.UI.Tooltip
                         var tooltipComponent = context.Component;
                         tooltipComponent.gameObject.AddComponent<SignalMonoBehaviour>().DestroySignal
                             .Subscribe(intersectLifetime.Lifetime, intersectLifetime.Terminate);
-                        Widget.Internal.Initialize(mediator, intersectLifetime);
+                        Widget.Internal.Initialize(_injector, mediator, intersectLifetime);
                         _opened.Add(mediator);
                         var modelMediator = mediator as IWidgetWithModel;
                         if (model != null)

@@ -24,7 +24,7 @@ namespace Framework.Runtime.Core.Widgets
         where TView : class
     {
         private bool _modelChanged;
-        
+
         public TModel Model { get; private set; }
 
         protected virtual void OnBeforeModelChange()
@@ -66,13 +66,9 @@ namespace Framework.Runtime.Core.Widgets
         void SetView(TView view);
     }
 
-    public abstract class Widget<TView> : Widget, IWidgetWithView<TView>, IResolve
+    public abstract class Widget<TView> : Widget, IWidgetWithView<TView>
         where TView : class
     {
-        [Inject] private IResolve _resolve;
-
-        object IResolve.Resolve(Type type) => _resolve.Resolve(type);
-
         public TView View { get; private set; }
 
         protected virtual void OnViewAdded()
@@ -119,16 +115,20 @@ namespace Framework.Runtime.Core.Widgets
         void Notify();
     }
 
-    public abstract class Widget : IDisposable, ISubscribeNotify
+    public abstract class Widget : IDisposable, ISubscribeNotify, IResolve, IInject
     {
         private readonly List<Widget> _children = new();
         private Lifetime.Definition _definition;
         private Signal _onNotify;
         private bool _initialized;
         private Widget _parent;
+        private IInjector _injector;
 
         public Lifetime Lifetime => _definition.Lifetime;
         protected Widget Parent => _parent;
+        
+        object IResolve.Resolve(Type type) => _injector.Resolve(type);
+        void IInject.Inject(object value) => _injector.Inject(value);
 
         protected virtual void OnInitialize()
         {
@@ -146,7 +146,9 @@ namespace Framework.Runtime.Core.Widgets
 
         public void Dispose() => _definition.Terminate();
 
-        public void AddWidget(Widget widget)
+        public T AddWidget<T>(T widget) where T : Widget => (T)AddWidget((Widget)widget);
+
+        protected Widget AddWidget(Widget widget)
         {
             if (widget == null)
             {
@@ -169,6 +171,7 @@ namespace Framework.Runtime.Core.Widgets
             _children.Add(widget);
             var def = _definition.Lifetime.DefineNested(widget.GetType().Name);
             Internal.Initialize(
+                injector: _injector,
                 widget: widget,
                 definition: def,
                 beforeInitialization: () =>
@@ -185,6 +188,8 @@ namespace Framework.Runtime.Core.Widgets
                         }
                     });
                 });
+
+            return widget;
         }
 
         void ISubscribeNotify.Subscribe(Lifetime lifetime, Action listener) => _onNotify?.Subscribe(lifetime, listener);
@@ -192,9 +197,10 @@ namespace Framework.Runtime.Core.Widgets
 
         internal static class Internal
         {
-            internal static void Initialize(Widget widget, Lifetime.Definition definition,
+            internal static void Initialize(IInjector injector, Widget widget, Lifetime.Definition definition,
                 Action beforeInitialization = null)
             {
+                widget._injector = injector;
                 widget._definition = definition;
                 widget._onNotify = new Signal(definition.Lifetime);
                 widget._initialized = true;
@@ -223,6 +229,8 @@ namespace Framework.Runtime.Core.Widgets
 
                     widget._parent = null;
                 });
+
+                injector.Inject(widget);
 
                 if (beforeInitialization != null)
                 {

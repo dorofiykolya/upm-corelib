@@ -103,7 +103,7 @@ namespace Framework.Runtime.Services.UI.Windows
 
                     _opened.Add(context);
 
-                    Widget.Internal.Initialize(mediator, definition);
+                    Widget.Internal.Initialize(_injector, mediator, definition);
 
                     if (!definition.IsTerminated)
                     {
