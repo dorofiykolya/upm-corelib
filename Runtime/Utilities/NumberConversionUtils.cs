@@ -8,7 +8,7 @@ namespace Framework.Runtime.Utilities
         private const int MillionDeterminant = 999999;
         private const int ThousandDeterminant = 999;
 
-        public static string Conversion(int value)
+        public static string Conversion(long value)
         {
             string result;
 
@@ -30,7 +30,7 @@ namespace Framework.Runtime.Utilities
 
         public static string Conversion(string value)
         {
-            int number = int.Parse(value);
+            long number = long.Parse(value);
             return Conversion(number);
         }
     }
