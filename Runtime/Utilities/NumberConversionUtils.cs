@@ -1,12 +1,22 @@
 namespace Framework.Runtime.Utilities
 {
-    public class NumberConversionUtils
+    public static class NumberConversionUtils
     {
         private const string MillionFormat = "M";
         private const string ThousandFormat = "k";
 
         private const int MillionDeterminant = 999999;
         private const int ThousandDeterminant = 999;
+
+        public static string ToHumanReadable(this long value)
+        {
+            return Conversion(value);
+        }
+        
+        public static string ToHumanReadable(this int value)
+        {
+            return Conversion(value);
+        }
 
         public static string Conversion(long value)
         {
