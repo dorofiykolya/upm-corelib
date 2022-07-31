@@ -171,6 +171,8 @@ namespace Framework.Runtime.Core.Widgets
             var viewWidget = widget as IWidgetWithView;
 
             _children.Add(widget);
+            widget._parent = this;
+            
             var def = _definition.Lifetime.DefineNested(widget.GetType().Name);
             Internal.Initialize(
                 injector: _injector,
