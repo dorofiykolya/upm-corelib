@@ -126,7 +126,7 @@ namespace Framework.Runtime.Core.Widgets
 
         public Lifetime Lifetime => _definition.Lifetime;
         protected Widget Parent => _parent;
-        
+
         object IResolve.Resolve(Type type) => _injector.Resolve(type);
         void IInject.Inject(object value) => _injector.Inject(value);
 
@@ -141,6 +141,8 @@ namespace Framework.Runtime.Core.Widgets
         protected virtual void OnClose()
         {
         }
+
+        public void GetChildren(List<Widget> children) => children.AddRange(_children);
 
         public void Close() => _definition.Terminate();
 
