@@ -9,6 +9,7 @@ namespace Framework.Runtime.Services.UI.Windows
 {
     public class UIWindowComponentProvider : IUIComponentProvider
     {
+        private readonly bool _usePool;
         private readonly Func<ITransformProvider, Transform> _provider;
 
 #pragma warning disable 649
@@ -17,15 +18,17 @@ namespace Framework.Runtime.Services.UI.Windows
         [Inject] private ITransformProvider _transformProvider;
 #pragma warning restore 649
 
-        public UIWindowComponentProvider()
+        public UIWindowComponentProvider(bool usePool = true)
         {
+            _usePool = usePool;
             _provider = (p) => p.Window;
         }
 
-        public UIWindowComponentProvider(Func<ITransformProvider, Transform> provider)
+        public UIWindowComponentProvider(Func<ITransformProvider, Transform> provider, bool usePool = true)
         {
             Assert.IsNotNull(provider);
             _provider = provider;
+            _usePool = usePool;
         }
 
         public void Provide(Lifetime lifetime, string path, Type type, Action<UIComponentProviderContext> onResult)
@@ -45,7 +48,14 @@ namespace Framework.Runtime.Services.UI.Windows
                 context.Lifetime.AddAction(() =>
                 {
                     result.Release(windowComponent);
-                    result.Collect();
+                    if (!_usePool)
+                    {
+                        result.Collect();
+                    }
+                    else
+                    {
+                        windowComponent.transform.SetParent(_transformProvider.Pool, false);
+                    }
                 });
                 onResult(context);
             });

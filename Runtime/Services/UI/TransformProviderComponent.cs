@@ -7,6 +7,9 @@ namespace Framework.Runtime.Services.UI
         // canvases
         [field: SerializeField] public Canvas Canvas { get; private set; }
         [field: SerializeField] public Camera Camera { get; private set; }
+        
+        // pool
+        [field: SerializeField] public Transform Pool { get; private set; }
 
         // transforms
         [field: SerializeField] public RectTransform Background { get; private set; }

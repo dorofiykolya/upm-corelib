@@ -8,6 +8,9 @@ namespace Framework.Runtime.Services.UI
         Canvas Canvas { get; }
         Camera Camera { get; }
         
+        // Pool
+        Transform Pool { get; }
+        
         // Transforms
         RectTransform Background { get; }
         RectTransform Hud { get; }

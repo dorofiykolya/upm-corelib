@@ -89,8 +89,9 @@ namespace Framework.Runtime.Services.UI.Windows
                     var mediator = (Widget)_injector.Resolve(type);
                     var view = providerContext.Component;
 
-                    view.gameObject.AddComponent<SignalMonoBehaviour>().DestroySignal
-                        .Subscribe(definition.Lifetime, definition.Terminate);
+                    var signal = view.gameObject.GetComponent<SignalMonoBehaviour>();
+                    if (ReferenceEquals(signal, null) || signal == null) signal = view.gameObject.AddComponent<SignalMonoBehaviour>();
+                    signal.DestroySignal.Subscribe(definition.Lifetime, definition.Terminate);
 
                     definition.Lifetime.AddAction(() =>
                     {
