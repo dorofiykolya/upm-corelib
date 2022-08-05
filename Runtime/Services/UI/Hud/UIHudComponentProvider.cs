@@ -22,7 +22,7 @@ namespace Framework.Runtime.Services.UI.Hud
                 def.Terminate();
 
                 var parent = _transformProvider.Hud;
-                MonoBehaviour view = result.Instantiate<MonoBehaviour>(parent);
+                var view = result.Instantiate(type, parent);
 
                 if (parent == null)
                 {

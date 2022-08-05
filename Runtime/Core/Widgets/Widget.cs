@@ -53,6 +53,7 @@ namespace Framework.Runtime.Core.Widgets
 
     public interface IWidgetWithView
     {
+        Type ViewType { get; }
         object View { get; }
         void SetView(object view);
         void OnViewAdded();
@@ -100,6 +101,7 @@ namespace Framework.Runtime.Core.Widgets
             }
         }
 
+        Type IWidgetWithView.ViewType => typeof(TView);
         void IWidgetWithView<TView>.SetView(TView view) => this.SetView(view);
         object IWidgetWithView.View => this.View;
         void IWidgetWithView.SetView(object view) => this.SetView((TView)view);

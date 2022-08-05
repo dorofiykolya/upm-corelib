@@ -123,8 +123,8 @@ namespace Framework.Runtime.Services.UI.Hud
                 {
                     _injector.Inject(map.Provider);
                     var mediator = (Widget)_injector.Resolve(type);
-
-                    map.Provider.Provide(definition.Lifetime, map.Path, map.Type, (providerContext) =>
+                    var viewType = mediator.GetViewType();
+                    map.Provider.Provide(definition.Lifetime, map.Path, viewType, (providerContext) =>
                     {
                         var view = providerContext.Component;
                         view.gameObject.AddComponent<SignalMonoBehaviour>().DestroySignal
@@ -154,7 +154,10 @@ namespace Framework.Runtime.Services.UI.Hud
                             if (!definition.IsTerminated)
                             {
                                 var viewMediator = (IWidgetWithView)mediator;
-                                viewMediator.SetView(view);
+                                var viewComponent = view.GetType() != viewMediator.ViewType
+                                    ? view.GetComponent(viewMediator.ViewType)
+                                    : view;
+                                viewMediator.SetView(viewComponent);
                                 if (!definition.IsTerminated)
                                 {
                                     Widget.Internal.Ready(mediator);

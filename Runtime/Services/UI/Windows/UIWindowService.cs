@@ -84,13 +84,15 @@ namespace Framework.Runtime.Services.UI.Windows
             {
                 var map = _map[type];
                 _injector.Inject(map.Provider);
-                map.Provider.Provide(definition.Lifetime, map.Path, map.Type, providerContext =>
+                var mediator = (Widget)_injector.Resolve(type);
+                var viewType = mediator.GetViewType();
+                map.Provider.Provide(definition.Lifetime, map.Path, viewType, providerContext =>
                 {
-                    var mediator = (Widget)_injector.Resolve(type);
                     var view = providerContext.Component;
 
                     var signal = view.gameObject.GetComponent<SignalMonoBehaviour>();
-                    if (ReferenceEquals(signal, null) || signal == null) signal = view.gameObject.AddComponent<SignalMonoBehaviour>();
+                    if (ReferenceEquals(signal, null) || signal == null)
+                        signal = view.gameObject.AddComponent<SignalMonoBehaviour>();
                     signal.DestroySignal.Subscribe(definition.Lifetime, definition.Terminate);
 
                     definition.Lifetime.AddAction(() =>
@@ -118,7 +120,10 @@ namespace Framework.Runtime.Services.UI.Windows
                         if (!definition.IsTerminated)
                         {
                             var mediatorView = (IWidgetWithView)mediator;
-                            mediatorView.SetView(view);
+                            var viewComponent = view.GetType() != mediatorView.ViewType
+                                ? view.GetComponent(mediatorView.ViewType)
+                                : view;
+                            mediatorView.SetView(viewComponent);
 
                             Widget.Internal.Ready(mediator);
                             if (!definition.IsTerminated)

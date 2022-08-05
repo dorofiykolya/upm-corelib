@@ -93,8 +93,8 @@ namespace Framework.Runtime.Services.UI.Tooltip
                 {
                     _injector.Inject(map.Provider);
                     var mediator = (Widget)_injector.Resolve(type);
-
-                    map.Provider.Provide(intersectLifetime.Lifetime, map.Path, map.Type, (context) =>
+                    var viewType = mediator.GetViewType();
+                    map.Provider.Provide(intersectLifetime.Lifetime, map.Path, viewType, (context) =>
                     {
                         var tooltipComponent = context.Component;
                         tooltipComponent.gameObject.AddComponent<SignalMonoBehaviour>().DestroySignal
@@ -109,7 +109,11 @@ namespace Framework.Runtime.Services.UI.Tooltip
                         }
 
                         var viewMediator = (IWidgetWithView)mediator;
-                        viewMediator.SetView(tooltipComponent);
+                        var viewComponent = tooltipComponent.GetType() != viewMediator.ViewType
+                            ? tooltipComponent.GetComponent(viewMediator.ViewType)
+                            : tooltipComponent;
+                        viewMediator.SetView(viewComponent);
+                        
                         Widget.Internal.Ready(mediator);
                         if (onOpen != null)
                         {

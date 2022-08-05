@@ -127,13 +127,18 @@ namespace Framework.Runtime.Utilities
         _instances.Add(instance);
         return instance;
       }
-
+      
       public T Instantiate<T>(Transform transform) where T : Component
       {
-        T instance;
+        return (T)Instantiate(typeof(T), transform);
+      }
+
+      public Component Instantiate(Type type, Transform transform)
+      {
+        Component instance;
         if (_pool.Count != 0)
         {
-          instance = _pool.Pop().GetComponent<T>();
+          instance = _pool.Pop().GetComponent(type);
           instance.transform.SetParent(transform, false);
         }
         else
@@ -143,7 +148,7 @@ namespace Framework.Runtime.Utilities
           {
             throw new InvalidOperationException($"The Object you want to instantiate is null., prefab path: {_prefab}");
           }
-          instance = ((GameObject)Object.Instantiate((Object) prefab, transform, false)).GetComponent<T>();
+          instance = ((GameObject)Object.Instantiate((Object) prefab, transform, false)).GetComponent(type);
         }
         _instances.Add(instance.gameObject);
         return instance;

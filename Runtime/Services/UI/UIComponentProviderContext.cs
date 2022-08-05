@@ -7,9 +7,9 @@ namespace Framework.Runtime.Services.UI
     {
         private readonly Lifetime.Definition _definition;
 
-        public MonoBehaviour Component { get; private set; }
+        public Component Component { get; private set; }
 
-        public UIComponentProviderContext(MonoBehaviour component, Lifetime lifetime)
+        public UIComponentProviderContext(Component component, Lifetime lifetime)
         {
             Component = component;
             _definition = Lifetime.Define(lifetime);

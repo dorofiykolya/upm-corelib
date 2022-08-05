@@ -22,7 +22,8 @@ namespace Framework.Runtime.Services.UI.Tooltip
                 def.Terminate();
 
                 var parent = _transformProvider.Tooltip;
-                MonoBehaviour view = result.Instantiate<MonoBehaviour>(parent);
+                var view = result.Instantiate(type, parent);
+                
                 if (parent == null)
                 {
                     GameObject.DontDestroyOnLoad(view.gameObject);
