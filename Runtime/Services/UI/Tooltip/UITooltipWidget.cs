@@ -11,11 +11,11 @@ namespace Framework.Runtime.Services.UI.Tooltip
 
         protected override void OnReady()
         {
-            View.SubscribeOnEnter(Lifetime, () =>
+            View.SubscribeOnEnter(Lifetime, (enter) =>
             {
                 var reference = _service.Open<TTooltip, TTooltipModel>(Model);
                 Lifetime.AddAction(reference.Close);
-                View.SubscribeOnExit(Lifetime, () => { reference.Close(); });
+                View.SubscribeOnExit(Lifetime, (exit) => { reference.Close(); });
             });
         }
     }
