@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common;
 using Injections;
 using UnityEngine.Pool;
@@ -127,6 +128,7 @@ namespace Framework.Runtime.Core.Widgets
         private IInjector _injector;
 
         public Lifetime Lifetime => _definition.Lifetime;
+        public Widget[] Children => _children.ToArray();
         protected Widget Parent => _parent;
 
         object IResolve.Resolve(Type type) => _injector.Resolve(type);
@@ -145,6 +147,9 @@ namespace Framework.Runtime.Core.Widgets
         }
 
         public void GetChildren(List<Widget> children) => children.AddRange(_children);
+
+        public void GetChildren<T>(List<T> children, bool recursively = false) where T : Widget =>
+            GetChildren<T>(_children, children, recursively);
 
         public void Close() => _definition.Terminate();
 
@@ -174,7 +179,7 @@ namespace Framework.Runtime.Core.Widgets
 
             _children.Add(widget);
             widget._parent = this;
-            
+
             var def = _definition.Lifetime.DefineNested(widget.GetType().Name);
             Internal.Initialize(
                 injector: _injector,
@@ -200,6 +205,22 @@ namespace Framework.Runtime.Core.Widgets
 
         void ISubscribeNotify.Subscribe(Lifetime lifetime, Action listener) => _onNotify?.Subscribe(lifetime, listener);
         void ISubscribeNotify.Notify() => _onNotify?.Fire();
+
+        private void GetChildren<T>(List<Widget> source, List<T> target, bool recursively) where T : Widget
+        {
+            if (recursively)
+            {
+                target.AddRange(source.OfType<T>());
+                foreach (var widget in source)
+                {
+                    GetChildren<T>(widget._children, target, true);
+                }
+            }
+            else
+            {
+                target.AddRange(source.OfType<T>());
+            }
+        }
 
         internal static class Internal
         {
