@@ -222,6 +222,14 @@ namespace Framework.Runtime.Core.Widgets
             }
         }
 
+        public sealed class Root : Widget
+        {
+            public Root(Lifetime lifetime, IInjector injector)
+            {
+                Internal.Initialize(injector, this, lifetime.DefineNested());
+            }
+        }
+
         internal static class Internal
         {
             internal static void Initialize(IInjector injector, Widget widget, Lifetime.Definition definition,
