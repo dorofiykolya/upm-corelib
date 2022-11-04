@@ -2,7 +2,7 @@
     "name": "dorofiykolya.framework.editor",
     "rootNamespace": "",
     "references": [
-        "GUID:904235d1fc334f8aabb1b345ce52c38c"
+        "dorofiykolya.framework"
     ],
     "includePlatforms": [
         "Editor"
