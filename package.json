@@ -1,12 +1,13 @@
 {
-  "name": "dorofiykolya.framework",
-  "displayName": "Framework",
+  "name": "dorofiykolya.corelib",
+  "displayName": "Core Lib",
   "version": "1.13.0",
   "unity": "2021.3",
   "author": "https://github.com/dorofiykolya",
   "description": "require .NET 4x\n",
   "keywords": [
-    "framework"
+    "core",
+    "lib"
   ],
   "dependencies": {
     "dorofiykolya.lifetime":"1.0.0",
