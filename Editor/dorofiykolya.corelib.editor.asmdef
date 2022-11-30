@@ -1,12 +1,12 @@
 {
-    "name": "dorofiykolya.framework",
+    "name": "dorofiykolya.corelib.editor",
     "rootNamespace": "",
     "references": [
-        "dorofiykolya.lifetime",
-        "dorofiykolya.signal",
-        "Common.Injections"
+        "dorofiykolya.corelib"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
