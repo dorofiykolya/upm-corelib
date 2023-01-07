@@ -9,39 +9,32 @@ using Injections;
 
 namespace Framework.Runtime.Core.ContextBuilder
 {
-
     public class ContextServiceRegisterImpl : IServiceRegister
     {
+        private readonly IInjector _injector;
         private readonly IServicesObserverRegister _observer;
-        private readonly List<Binder> _serviceFactories = new List<Binder>();
+        private readonly List<IServiceResolver> _serviceFactories = new List<IServiceResolver>();
         private List<Service> _services;
 
-        public ContextServiceRegisterImpl(IServicesObserverRegister observer)
+        public IInjector Injector => _injector;
+
+        public ContextServiceRegisterImpl(IInjector injector, IServicesObserverRegister observer)
         {
+            _injector = injector;
             _observer = observer;
         }
 
-        public ContextServiceRegisterImpl()
+        public ContextServiceRegisterImpl(IInjector injector)
         {
-
+            _injector = injector;
         }
 
-        public void Register<T>(Func<Service> factory)
+        public void Register(IServiceResolver resolver)
         {
-            _serviceFactories.Add(new Binder(typeof(T), (i) => factory()));
+            _serviceFactories.Add(resolver);
         }
 
-        public void Register(Func<Service> factory)
-        {
-            _serviceFactories.Add(new Binder((i) => factory()));
-        }
-
-        public void Register<TInterface, TImpl>() where TImpl : Service
-        {
-            _serviceFactories.Add(new Binder(typeof(TInterface), typeof(TImpl)));
-        }
-
-        internal async Task Awake(Lifetime lifetime, Logger logger, IInjector injector)
+        internal async Task Awake(Lifetime lifetime, Logger logger)
         {
             if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
             {
@@ -50,23 +43,34 @@ namespace Framework.Runtime.Core.ContextBuilder
             _services = new List<Service>(_serviceFactories.Count);
             foreach (var binder in _serviceFactories)
             {
-                var service = binder.Factory(injector);
+                var service = binder.Resolver(_injector);
                 if (_observer != null)
                 {
                     _observer.Register(service);
                 }
-                if (service == null) throw new NullReferenceException($"Service {binder.Type} cannot be null");
-
-                if (binder.Type != null)
+                if (service == null)
                 {
-                    injector.ToValue(binder.Type, service);
+                    var interfaces = "";
+                    if (binder.Interfaces != null && binder.Interfaces.Length != 0)
+                    {
+                        interfaces = string.Join(",", binder.Interfaces.Select(t => t.Name));
+                    }
+                    throw new NullReferenceException($"Service {interfaces} cannot be null");
+                }
+
+                if (binder.Interfaces != null && binder.Interfaces.Length != 0)
+                {
+                    foreach (var binderInterface in binder.Interfaces)
+                    {
+                        _injector.ToValue(binderInterface, service);
+                    }
                 }
                 else
                 {
-                    injector.ToValue(service);
+                    _injector.ToValue(service);
                 }
 
-                Service.Internal.Inject(service, lifetime, logger.WithTag(service.GetType()), injector);
+                Service.Internal.Inject(service, lifetime, logger.WithTag(service.GetType()), _injector);
                 _services.Add(service);
             }
             if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
@@ -76,7 +80,7 @@ namespace Framework.Runtime.Core.ContextBuilder
 
             foreach (var service in _services)
             {
-                injector.Inject(service);
+                _injector.Inject(service);
             }
 
             await Task.Yield();
@@ -128,33 +132,6 @@ namespace Framework.Runtime.Core.ContextBuilder
         {
             await task;
             logger.V(message);
-        }
-
-        private class Binder
-        {
-            public Type Type { get; }
-            public Func<IInjector, Service> Factory { get; }
-
-            public Binder(Type type, Func<IInjector, Service> factory)
-            {
-                Type = type;
-                Factory = factory;
-            }
-
-            public Binder(Func<IInjector, Service> factory)
-            {
-                Factory = factory;
-            }
-
-            public Binder(Type typeInterface, Type impl)
-            {
-                Type = typeInterface;
-                Factory = (inj) =>
-                {
-                    inj.ToSingleton(typeInterface, impl);
-                    return (Service)inj.Resolve(typeInterface);
-                };
-            }
         }
     }
 }

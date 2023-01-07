@@ -1,8 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using Common;
 using Framework.Runtime.Core.Loggers;
-using Framework.Runtime.Core.Services;
 using Injections;
 
 namespace Framework.Runtime.Core.ContextBuilder
@@ -16,38 +14,28 @@ namespace Framework.Runtime.Core.ContextBuilder
             Logger = logger;
             Lifetime = lifetime;
             Injector = injector;
-            _serviceImpl = new ContextServiceRegisterImpl(observer);
+            _serviceImpl = new ContextServiceRegisterImpl(injector, observer);
         }
 
         public Logger Logger { get; }
         public Lifetime Lifetime { get; }
         public IInjector Injector { get; }
+        
+        public void Register(IServiceResolver resolver)
+        {
+            _serviceImpl.Register(resolver);
+        }
 
         public T Resolve<T>() => Injector.Resolve<T>();
 
         public async Task AwakeServices()
         {
-            await _serviceImpl.Awake(Lifetime, Logger, Injector);
+            await _serviceImpl.Awake(Lifetime, Logger);
         }
 
         public async Task InitializeServices()
         {
             await _serviceImpl.Initialize(Logger);
-        }
-
-        public void Register(Func<Service> factory)
-        {
-            _serviceImpl.Register(factory);
-        }
-
-        public void Register<T>(Func<Service> factory)
-        {
-            _serviceImpl.Register<T>(factory);
-        }
-
-        public void Register<TInterface, TImpl>() where TImpl : Service
-        {
-            _serviceImpl.Register<TInterface, TImpl>();
         }
     }
 }
