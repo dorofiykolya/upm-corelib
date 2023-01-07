@@ -11,12 +11,12 @@ namespace Framework.Runtime.Core.ContextBuilder
     {
         private readonly ContextServiceRegisterImpl _serviceImpl;
 
-        public ContextServiceBuilder(Logger logger, Lifetime lifetime, IInjector injector)
+        public ContextServiceBuilder(Logger logger, Lifetime lifetime, IInjector injector, IServicesObserverRegister observer = null)
         {
             Logger = logger;
             Lifetime = lifetime;
             Injector = injector;
-            _serviceImpl = new ContextServiceRegisterImpl();
+            _serviceImpl = new ContextServiceRegisterImpl(observer);
         }
 
         public Logger Logger { get; }
@@ -32,7 +32,7 @@ namespace Framework.Runtime.Core.ContextBuilder
 
         public async Task InitializeServices()
         {
-            await _serviceImpl.Initialize();
+            await _serviceImpl.Initialize(Logger);
         }
 
         public void Register(Func<Service> factory)

@@ -24,6 +24,7 @@ namespace Framework.Runtime.Core.Loggers
     {
         Logger Parent { get; }
         LoggerFlag Flag { get; set; }
+        LoggerFlag LogFlag { get; }
         Logger WithTag(Type type);
         Logger WithTag(string tag);
 

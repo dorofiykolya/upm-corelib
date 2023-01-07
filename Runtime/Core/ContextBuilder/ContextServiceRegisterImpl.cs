@@ -1,18 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Framework.Runtime.Core.Loggers;
 using Framework.Runtime.Core.Services;
 using Injections;
-using UnityEngine.Assertions;
 
 namespace Framework.Runtime.Core.ContextBuilder
 {
+
     public class ContextServiceRegisterImpl : IServiceRegister
     {
+        private readonly IServicesObserverRegister _observer;
         private readonly List<Binder> _serviceFactories = new List<Binder>();
         private List<Service> _services;
+
+        public ContextServiceRegisterImpl(IServicesObserverRegister observer)
+        {
+            _observer = observer;
+        }
+
+        public ContextServiceRegisterImpl()
+        {
+
+        }
 
         public void Register<T>(Func<Service> factory)
         {
@@ -31,11 +43,20 @@ namespace Framework.Runtime.Core.ContextBuilder
 
         internal async Task Awake(Lifetime lifetime, Logger logger, IInjector injector)
         {
+            if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+            {
+                logger.V($"Begin to prepare services");
+            }
             _services = new List<Service>(_serviceFactories.Count);
             foreach (var binder in _serviceFactories)
             {
                 var service = binder.Factory(injector);
-                Assert.IsNotNull(service);
+                if (_observer != null)
+                {
+                    _observer.Register(service);
+                }
+                if (service == null) throw new NullReferenceException($"Service {binder.Type} cannot be null");
+
                 if (binder.Type != null)
                 {
                     injector.ToValue(binder.Type, service);
@@ -47,6 +68,10 @@ namespace Framework.Runtime.Core.ContextBuilder
 
                 Service.Internal.Inject(service, lifetime, logger.WithTag(service.GetType()), injector);
                 _services.Add(service);
+            }
+            if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+            {
+                logger.V($"Services [\n{string.Join(",\n", _services.Select(x => x.GetType().Name))}\n]");
             }
 
             foreach (var service in _services)
@@ -60,7 +85,16 @@ namespace Framework.Runtime.Core.ContextBuilder
             var tasks = new List<Task>(_services.Count);
             foreach (var service in _services)
             {
-                tasks.Add(Service.Internal.OnAwake(service));
+                if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+                {
+                    logger.V($"{service.GetType().Name}.OnAwake");
+                }
+                var task = Service.Internal.OnAwake(service);
+                tasks.Add(task);
+                if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+                {
+                    OnComplete(logger, task, $"{service.GetType().Name}.OnAwake->Completed");
+                }
                 if (lifetime.IsTerminated) return;
             }
 
@@ -68,17 +102,32 @@ namespace Framework.Runtime.Core.ContextBuilder
             if (lifetime.IsTerminated) return;
         }
 
-        internal async Task Initialize()
+        internal async Task Initialize(Logger logger)
         {
             var tasks = new List<Task>(_services.Count);
             foreach (var service in _services)
             {
                 if (service.Lifetime.IsTerminated) return;
-                tasks.Add(Service.Internal.OnInitialize(service));
+                if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+                {
+                    logger.V($"{service.GetType().Name}.OnInitialize");
+                }
+                var task = Service.Internal.OnInitialize(service);
+                tasks.Add(task);
+                if ((logger.LogFlag & LoggerFlag.Verbose) != 0)
+                {
+                    OnComplete(logger, task, $"{service.GetType().Name}.OnInitialize->Completed");
+                }
                 if (service.Lifetime.IsTerminated) return;
             }
 
             await Task.WhenAll(tasks);
+        }
+
+        private async void OnComplete(Logger logger, Task task, string message)
+        {
+            await task;
+            logger.V(message);
         }
 
         private class Binder

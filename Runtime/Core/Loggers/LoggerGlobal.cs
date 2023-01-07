@@ -25,6 +25,7 @@ namespace Framework.Runtime.Core.Loggers
 
         public Logger Parent { get; } = null;
         public LoggerFlag Flag { get; set; } = LoggerFlag.All;
+        public LoggerFlag LogFlag => Flag;
 
         public Logger Log(LoggerFlag flag, string tag, object message)
         {
@@ -72,6 +73,7 @@ namespace Framework.Runtime.Core.Loggers
             private readonly LoggerGlobal _loggerGlobal;
             public string Tag { get; }
             public LoggerFlag Flag { get; set; } = LoggerFlag.All;
+            public LoggerFlag LogFlag => InternalFlag;
             public Logger Parent => _parent;
 
             public LoggerImpl(string tag, LoggerImpl parent = null, LoggerGlobal loggerGlobal = null)

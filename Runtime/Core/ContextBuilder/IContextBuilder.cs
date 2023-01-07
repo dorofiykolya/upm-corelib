@@ -20,7 +20,10 @@ namespace Framework.Runtime.Core.ContextBuilder
     public interface IContextServiceBuilder : IContextServiceSetup
     {
         static IContextServiceBuilder Default(Logger logger, Lifetime lifetime, IInjector injector) =>
-            new ContextServiceBuilder(logger, lifetime, injector);
+                new ContextServiceBuilder(logger, lifetime, injector);
+
+        static IContextServiceBuilder Default(Logger logger, Lifetime lifetime, IInjector injector, IServicesObserverRegister observerRegister) =>
+                new ContextServiceBuilder(logger, lifetime, injector, observerRegister);
 
         Task AwakeServices();
         Task InitializeServices();
