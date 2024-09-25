@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Common;
 using Framework.Runtime.Core.Loggers;
@@ -9,18 +10,24 @@ namespace Framework.Runtime.Core.ContextBuilder
     {
         private readonly ContextServiceRegisterImpl _serviceImpl;
 
-        public ContextServiceBuilder(Logger logger, Lifetime lifetime, IInjector injector, IServicesObserverRegister observer = null)
+        public ContextServiceBuilder(
+            Logger logger,
+            Lifetime lifetime,
+            IInjector injector,
+            IServicesObserverRegister observer = null,
+            Action<ContextServiceBuilderOptions> options = null
+        )
         {
             Logger = logger;
             Lifetime = lifetime;
             Injector = injector;
-            _serviceImpl = new ContextServiceRegisterImpl(injector, observer);
+            _serviceImpl = new ContextServiceRegisterImpl(injector, observer, options);
         }
 
         public Logger Logger { get; }
         public Lifetime Lifetime { get; }
         public IInjector Injector { get; }
-        
+
         public void Register(IServiceResolver resolver)
         {
             _serviceImpl.Register(resolver);

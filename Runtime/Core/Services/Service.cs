@@ -32,7 +32,7 @@ namespace Framework.Runtime.Core.Services
 
         object IResolve.Resolve(Type type) => _resolve.Resolve(type);
 
-        internal static class Internal
+        public static class Internal
         {
             public static void Inject(Service service, Lifetime lifetime, Logger logger, IResolve resolve)
             {
